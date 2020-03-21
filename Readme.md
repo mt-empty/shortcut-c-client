@@ -1,11 +1,12 @@
 # Shortcut
 
-A command line client for [shortcut-pages](), written in C.
+A command line client for [shortcut-pages](https://github.com/mt-empty/shortcut-pages), written in C.
 
 ![](/shortcut.gif)
 
+
 ## Installing
-**Note**, I'm fairly new to Linux, this tool is in it's early stages, contribution is greatly appreciated.
+**Note**, I'm fairly new to Linux, this tool is in it's early stages, any contribution is greatly appreciated.
 
 Install from source:
 ```
@@ -21,11 +22,13 @@ cd shortcut-c-client
 install-extra
 ```
 
-The default prefix for installation is `/usr/local/bin`.
+The default prefix for installation is `/usr/local/bin`. Pages are located in `/opt`.
+
 
 ### Requirements
 
-- `clang`/`gcc`
+* `clang`/`gcc`
+* `git`
 
 
 ## Usage
@@ -52,4 +55,4 @@ Contributions are most welcome!
 
 Bugs: open an issue here.
 
-New features: open an issue here, feel free to send a pull request with the included feature.
+New features: open an issue here or feel free to send a pull request with the included feature.
