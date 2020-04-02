@@ -28,6 +28,8 @@ void printHelp();
 
 #define VERSION "0.1.0"
 #define BUFFER_SIZE 1000
+#define PAGES_BASE_DIR "/opt/shortcut/pages/"
+#define PAGES_FILE_EXT ".md"
 
 #define ANSI_COLOR_RESET_FG "\x1b[39m"
 #define ANSI_COLOR_TITLE_FG "\x1b[39m"
@@ -60,6 +62,7 @@ int main(int argc, char *argv[])
 
     if (handleArgs(argc, argv) != 0)
     {
+        free(filename);
         return 1;
     }
 
@@ -128,7 +131,7 @@ int handleArgs(int argc, char *argv[])
 
     if ((argc - optind) == 1) // optind is the index of the file argument in getOpt header file
     {
-        getShortcutPage(argv[optind]);
+        return getShortcutPage(argv[optind]);
     }
     return EXIT_SUCCESS;
 }
@@ -136,16 +139,29 @@ int handleArgs(int argc, char *argv[])
 // prints shortcut page of a given program
 int getShortcutPage(char *filename)
 {
-    char path[50] = "/opt/shortcut/pages/";
-    strcat(path, filename);
-    strcat(path, ".md");
-    // fprintf(stdout, "%s \n", path);
+    // allocate memory for  the full path; making sure to not exceed
+    // 24+BUFFER_SIZE
+    int buf_size = strlen(PAGES_BASE_DIR) +
+        ((strlen(filename) < BUFFER_SIZE) ? strlen(filename): BUFFER_SIZE) +
+        strlen(PAGES_FILE_EXT) + 1;
+    char* path = (char *) calloc(buf_size, sizeof(char));
+
+    strncat(path, PAGES_BASE_DIR, strlen(PAGES_BASE_DIR));
+    strncat(path,
+            filename,
+            (strlen(filename) < BUFFER_SIZE) ?
+                strlen(filename) :
+                (size_t) BUFFER_SIZE
+            );
+    strncat(path, PAGES_FILE_EXT, strlen(PAGES_FILE_EXT));
 
     if (printFile(path))
     {
         fprintf(stderr, "No page available for \"%s\"\n", filename);
-        exit(EXIT_FAILURE);
+        free(path);
+        return EXIT_FAILURE;
     }
+    free(path);
     return EXIT_SUCCESS;
 }
 
@@ -157,8 +173,10 @@ int printFile(char const path[])
     if (!getFileContent(path, &output))
     {
         parseShortcutPage(output);
+        free(output); // free memory that was malloc'd by getFileContent
         return 0;
     }
+    free(output); // free memory that was malloc'd by getFileContent
     return 1;
 }
 
@@ -275,7 +293,7 @@ int getFileContent(char const *path, char **out)
     if (fseek(fp, 0, SEEK_SET))
         goto error;
 
-    *out = (char *)malloc(len);
+    *out = (char *)calloc(len+1, sizeof(char));
     if (*out == NULL)
         goto error;
 
