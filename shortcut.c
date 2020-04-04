@@ -17,6 +17,8 @@ Author: mt-empty
 #include <errno.h>
 #include <stdio.h>
 
+#include "cJSON.h"
+
 int handleArgs(int argc, char *argv[]);
 int getShortcutPage(char *filename);
 int getFileContent(char const *path, char **out);
@@ -25,6 +27,7 @@ int printFile(char const path[]);
 // int listPrograms();
 void printVersion();
 void printHelp();
+int parseJsonPage(const char* const input);
 
 #define VERSION "0.1.0"
 #define BUFFER_SIZE 1000
@@ -136,9 +139,9 @@ int handleArgs(int argc, char *argv[])
 // prints shortcut page of a given program
 int getShortcutPage(char *filename)
 {
-    char path[50] = "/opt/shortcut/pages/";
+    char path[80] = "/media/shalmanu/UNI/projects/shortcut-pages/contribution/";
     strcat(path, filename);
-    strcat(path, ".md");
+    strcat(path, ".json");
     // fprintf(stdout, "%s \n", path);
 
     if (printFile(path))
@@ -156,11 +159,93 @@ int printFile(char const path[])
 
     if (!getFileContent(path, &output))
     {
-        parseShortcutPage(output);
+        parseJsonPage(output);
         return 0;
     }
     return 1;
 }
+
+
+int parseJsonPage(const char* const input){
+    const cJSON *name = NULL;
+    const cJSON *metadata = NULL;
+    const cJSON *sourceUrl = NULL;
+    const cJSON *aliases = NULL;
+    const cJSON *alias = NULL;
+    // const cJSON *description = NULL;
+    const cJSON *section_order = NULL;
+    const cJSON *sections = NULL;
+    const cJSON *sectionName = NULL;
+    const cJSON *section = NULL;
+    const cJSON *shrtDescPair = NULL;
+
+    int status = 0;
+
+    cJSON *page_json = cJSON_Parse(input);
+    if (page_json == NULL)
+    {
+        const char *error_ptr = cJSON_GetErrorPtr();
+        if (error_ptr != NULL)
+        {
+            fprintf(stderr, "JSON file error. Error before: %s\n", error_ptr);
+        }
+        status = 0;
+        goto end;
+    }
+
+    name = cJSON_GetObjectItemCaseSensitive(page_json, "name");
+    metadata = cJSON_GetObjectItemCaseSensitive(page_json, "metadata");
+    sourceUrl = cJSON_GetObjectItemCaseSensitive(metadata, "sourceUrl");
+
+    aliases = cJSON_GetObjectItemCaseSensitive(page_json, "aliases");
+
+    if (cJSON_IsString(name) && (name->valuestring != NULL))
+    {
+        fprintf(stdout, "%s%s%s\n", ANSI_BOLD_ON, name->valuestring, ANSI_BOLD_OFF);
+    }
+
+    if (cJSON_IsString(sourceUrl) && (sourceUrl->valuestring != NULL))
+    {
+        fprintf(stdout, "Source: %s\n", sourceUrl->valuestring);
+    }
+
+    if (cJSON_IsArray(aliases))
+    {
+        fprintf(stdout, "Aliases: ");
+
+        cJSON_ArrayForEach(alias, aliases){
+            fprintf(stdout, "%s, ",alias->valuestring);
+        }
+        fprintf(stdout, "\n");
+
+    }
+
+    fprintf(stdout, "\n");
+
+    section_order = cJSON_GetObjectItemCaseSensitive(page_json, "section_order");
+    sections = cJSON_GetObjectItemCaseSensitive(page_json, "sections");
+
+    cJSON_ArrayForEach(sectionName, section_order)
+    {
+        fprintf(stdout, "%s\n\n", sectionName->valuestring);
+        
+        section = cJSON_GetObjectItemCaseSensitive(sections, sectionName->valuestring);
+        cJSON_ArrayForEach(shrtDescPair, section)
+        {
+
+            cJSON *val = cJSON_GetObjectItemCaseSensitive(shrtDescPair, "val");
+            cJSON *key = cJSON_GetObjectItemCaseSensitive(shrtDescPair, "key");
+
+            fprintf(stdout, "\t%s%s \t%s\t %s\n", ANSI_COLOR_SHORTCUT_FG, key->valuestring, ANSI_COLOR_RESET_FG, val->valuestring );
+        }
+        fprintf(stdout, "\n");
+    }
+
+end:
+    cJSON_Delete(page_json);
+    return status;
+}
+
 
 int parseShortcutPage(char const *input)
 {

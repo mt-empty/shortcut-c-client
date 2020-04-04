@@ -2,6 +2,7 @@ CC := gcc
 CCFLAG := -Wall
 DBGFLAG := -g
 CCOBJFLAG := $(CCFLAG) -c
+DEPS := cJson.h 
 
 PREFIX	= /usr/local
 DESTDIR	= 
@@ -9,8 +10,9 @@ TARGET	= shortcut
 
 REPO	= https://github.com/mt-empty/shortcut-pages
 
-shortcut: shortcut.o
+shortcut: cJson.h
 	@$(CC) $(CCFLAG) -o $@ $<
+
 
 .PHONY: clean
 clean:
