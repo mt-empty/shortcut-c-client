@@ -149,14 +149,14 @@ int getShortcutPage(char *filename)
         strlen(PAGES_FILE_EXT) + 1;
     char* path = (char *) calloc(buf_size, sizeof(char));
 
-    strncat(path, PAGES_BASE_DIR, strlen(PAGES_BASE_DIR));
+    strcat(path, PAGES_BASE_DIR);
     strncat(path,
             filename,
             (strlen(filename) < BUFFER_SIZE) ?
                 strlen(filename) :
                 (size_t) BUFFER_SIZE
             );
-    strncat(path, PAGES_FILE_EXT, strlen(PAGES_FILE_EXT));
+    strcat(path, PAGES_FILE_EXT);
 
     if (printFile(path))
     {
