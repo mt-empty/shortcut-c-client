@@ -6,6 +6,9 @@ Last modified: 20/03/2020
 Author: mt-empty
 */
 
+/* Feature test macro for realpath */
+#define _DEFAULT_SOURCE
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/file.h>
@@ -19,6 +22,7 @@ Author: mt-empty
 
 int handleArgs(int argc, char *argv[]);
 int getShortcutPage(char *filename);
+int isValidShortcutPath(const char *path);
 int getFileContent(char const *path, char **out);
 int parseShortcutPage(char const *input);
 int printFile(char const path[]);
@@ -78,7 +82,7 @@ int handleArgs(int argc, char *argv[])
     while (1)
     {
         // int this_option_optind = optind ? optind : 1;
-    
+
         int option_index = 0;
 
         c = getopt_long(argc, argv, "hV",
@@ -146,14 +150,25 @@ int getShortcutPage(char *filename)
         strlen(PAGES_FILE_EXT) + 1;
     char* path = (char *) calloc(buf_size, sizeof(char));
 
-    strcat(path, PAGES_BASE_DIR);
+    // don't prepend base dir if it's already provided
+    if(strncmp(PAGES_BASE_DIR, filename, strlen(PAGES_BASE_DIR)-1) != 0) {
+        strcat(path, PAGES_BASE_DIR);
+    }
     strncat(path,
             filename,
             (strlen(filename) < BUFFER_SIZE) ?
                 strlen(filename) :
                 (size_t) BUFFER_SIZE
             );
-    strcat(path, PAGES_FILE_EXT);
+
+    // similarly don't append file extension if it's already given
+    if(strlen(filename) < strlen(PAGES_FILE_EXT) ||
+            strcmp(
+                &filename[strlen(filename) - strlen(PAGES_FILE_EXT)],
+                PAGES_FILE_EXT)
+            != 0)  {
+        strcat(path, PAGES_FILE_EXT);
+    }
 
     if (printFile(path))
     {
@@ -167,8 +182,12 @@ int getShortcutPage(char *filename)
 
 int printFile(char const path[])
 {
-
     char *output;
+
+    // check if the path resides in PAGES_BASE_DIR
+    if(!isValidShortcutPath(path)) {
+        return 1;
+    }
 
     if (!getFileContent(path, &output))
     {
@@ -178,6 +197,27 @@ int printFile(char const path[])
     }
     free(output); // free memory that was malloc'd by getFileContent
     return 1;
+}
+
+/*
+ * Checks if the given path is a real path, that is inside the PAGES_BASE_DIR
+ *
+ * Returns 1 if it is; 0 if it is not
+ *
+ */
+int isValidShortcutPath(const char* path) {
+
+    char* abspath = realpath(path, NULL);
+
+    if(abspath) {
+        int dirsAreEqual =  strncmp(PAGES_BASE_DIR, abspath, strlen(PAGES_BASE_DIR));
+
+        free(abspath);
+        return (dirsAreEqual == 0);
+    }
+    free(abspath);
+    return 0;
+
 }
 
 int parseShortcutPage(char const *input)
