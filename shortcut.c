@@ -19,6 +19,7 @@ Author: mt-empty
 #include <string.h>
 #include <errno.h>
 #include <stdio.h>
+#include <dirent.h>
 
 int handleArgs(int argc, char *argv[]);
 int getShortcutPage(char *filename);
@@ -26,7 +27,7 @@ int isValidShortcutPath(const char *path);
 int getFileContent(char const *path, char **out);
 int parseShortcutPage(char const *input);
 int printFile(char const path[]);
-// int listPrograms();
+int listPrograms();
 void printVersion();
 void printHelp();
 
@@ -46,7 +47,7 @@ void printHelp();
 
 static int help_flag = 0;
 static int version_flag = 0;
-// static int list_flag = 0;
+static int list_flag = 0;
 // static int verbose_flag;
 // static int update_flag;
 // static int platform_flag;
@@ -54,7 +55,7 @@ static int version_flag = 0;
 static struct option long_options[] = {
     {"help", no_argument, &help_flag, 1},
     {"version", no_argument, &version_flag, 1},
-    // {"list", no_argument, &list_flag, 1},
+    {"list", no_argument, &list_flag, 1},
     // { "verbose", no_argument, &verbose_flag, 1 },
     // { "update", no_argument, &update_flag, 1 },
     // { "platform", required_argument, &platform_flag, 'p' },
@@ -85,7 +86,7 @@ int handleArgs(int argc, char *argv[])
 
         int option_index = 0;
 
-        c = getopt_long(argc, argv, "hV",
+        c = getopt_long(argc, argv, "hVl",
                         long_options, &option_index);
         if (c == -1)
             break;
@@ -107,9 +108,9 @@ int handleArgs(int argc, char *argv[])
             version_flag = 1;
             break;
 
-        // case 'l':
-        //     list_flag = 1;
-        //     break;
+        case 'l':
+            list_flag = 1;
+            break;
 
         case '?': //throws getopt library defined error
             break;
@@ -128,10 +129,10 @@ int handleArgs(int argc, char *argv[])
         printVersion();
     }
 
-    // if (list_flag)
-    // {
-    //     listPrograms();
-    // }
+    if (list_flag)
+    {
+        listPrograms();
+    }
 
     if ((argc - optind) == 1) // optind is the index of the file argument in getOpt header file
     {
@@ -154,6 +155,7 @@ int getShortcutPage(char *filename)
     if(strncmp(PAGES_BASE_DIR, filename, strlen(PAGES_BASE_DIR)-1) != 0) {
         strcat(path, PAGES_BASE_DIR);
     }
+    // might need to add the length of path to filename when checking lenght against BUFFER_SIZE
     strncat(path,
             filename,
             (strlen(filename) < BUFFER_SIZE) ?
@@ -351,16 +353,35 @@ error:
     return 1;
 }
 
-// int listPrograms()
-// {
-//     char path[50] = "programs.md";
-//     if (printFile(path))
-//     {
-//         fprintf(stderr, "No pages available\n");
-//         exit(EXIT_FAILURE);
-//     }
-//     return EXIT_SUCCESS;
-// }
+int listPrograms()
+{
+    struct dirent *file;
+    DIR *dir = opendir(PAGES_BASE_DIR);
+    if (dir == NULL)  // opendir returns NULL if couldn't open directory 
+    { 
+        fprintf(stdout, "Could not open current directory" ); 
+        return 0; 
+    } 
+
+    // Go through the program pages in order to list them
+    while ((file = readdir(dir)) != NULL) {
+        struct stat buf;
+        char path[BUFFER_SIZE] = PAGES_BASE_DIR;
+        strncat(path, file->d_name, BUFFER_SIZE); 
+
+        if (lstat(path, &buf) == -1) {
+            return EXIT_FAILURE;
+        }
+
+        if (S_ISREG(buf.st_mode)){ // Is the file not a symlink?
+            printf("%.*s\n", strlen(file->d_name)-3, file->d_name); //Print everything except the last 3 characters
+
+        }
+    }
+    closedir(dr); 
+
+    return EXIT_SUCCESS;
+}
 
 void printVersion()
 {
@@ -375,5 +396,6 @@ void printHelp()
 
     fprintf(stdout, "\t%-20s %-40s\n", "-V, --version", "print program version");
     fprintf(stdout, "\t%-20s %-40s\n", "-h, --help", "print help information");
+    fprintf(stdout, "\t%-20s %-40s\n", "-l, --list", "list all available pages");
     // fprintf(stdout, "    %-20s %-30s\n", "-p, platform", "select platform, linux / osx / common");
 }
