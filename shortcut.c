@@ -378,7 +378,7 @@ int listPrograms()
 
         }
     }
-    closedir(dr); 
+    closedir(dir); 
 
     return EXIT_SUCCESS;
 }
