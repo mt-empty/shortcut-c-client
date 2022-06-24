@@ -1,35 +1,37 @@
 CC := gcc
 CCFLAG := -Wall
 DBGFLAG := -g
-CCOBJFLAG := $(CCFLAG) -c
 
 PREFIX	= /usr/local
 DESTDIR	= 
 TARGET	= shortcut
+TARGET_DIR = shortcut-pages
 
 REPO	= https://github.com/mt-empty/shortcut-pages
 
 shortcut: shortcut.o
 	@$(CC) $(CCFLAG) -o $@ $<
 
+shortcut-debug: shortcut.o
+	@$(CC) $(CCFLAG) $(DBGFLAG) -o $@ $<
+
 .PHONY: clean
 clean:
 	@rm -f *.o *.h.gch
-	@rm -rf shortcut-pages pages
+	@rm -rf $(TARGET_DIR) pages
 
 .PHONY: clone
-clone:	clean
-	@echo "Cloning repo"
-	@git clone $(REPO)
+clone:
+	@git -C $(TARGET_DIR) pull || (echo "Cloning shortcut pages" && git clone $(REPO) $(TARGET_DIR))
 
 .PHONY: move
 move: clone uninstall
 	@mkdir pages
-	@cp -r shortcut-pages/GUI/* pages
+	@cp -r $(TARGET_DIR)/GUI/* pages
 
 
 .PHONY: install
-install: shortcut move
+install: clean shortcut move
 	
 	@echo "Installing"
 	
@@ -44,8 +46,12 @@ install: shortcut move
 
 .PHONY: install-extra
 install-extra: install
-	@cp -r shortcut-pages/nonGUI/* $(DESTDIR)/opt/$(TARGET)/pages/
+	@cp -r $(TARGET_DIR)/nonGUI/* $(DESTDIR)/opt/$(TARGET)/pages/
 
+.PHONY: debug
+debug: shortcut-debug clone
+	@mv $< $(TARGET)
+	@rm -f *.o *.h.gch
 
 .PHONY: uninstall
 uninstall:
