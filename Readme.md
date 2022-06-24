@@ -43,10 +43,10 @@ available commands:
 
 
 ## TODO
-* Auto completion
-* Update option
-* List all pages option
-* Verbose option
+* [ ] Auto completion
+* [ ] Update option
+* [ ] List all pages option
+* [ ] Verbose option
 
 
 ## Contributing
