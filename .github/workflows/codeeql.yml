@@ -1,4 +1,3 @@
-
 name: "Code Scanning - Action"
 
 on:
@@ -16,7 +15,7 @@ on:
     #        │  │ │ │ │
     #        │  │ │ │ │
     #        *  * * * *
-    - cron: '30 1 1 * 0'
+    - cron: "30 1 1 * 0"
 
 jobs:
   CodeQL-Build:
@@ -37,8 +36,8 @@ jobs:
         with:
           languages: c
 
-      - name: Compile and install
-        run: make install
+      - name: Compile
+        run: make debug
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v2
