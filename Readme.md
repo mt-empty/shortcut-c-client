@@ -22,7 +22,7 @@ cd shortcut-c-client
 install-extra
 ```
 
-The default prefix for installation is `/usr/local/bin`. Pages are located in `/opt`.
+The default prefix for installation is `/usr/local/bin`. Pages are located in `/opt`, these can be overwritten in the makefile or simply pass the variables when making `make PREFIX=YOUR_PATH DEST_DIR=YOUR_PATH install`.
 
 
 ### Requirements
@@ -43,10 +43,10 @@ available commands:
 
 
 ## TODO
-* Auto completion
-* Update option
-* List all pages option
-* Verbose option
+* [ ] Auto completion
+* [ ] Update option
+* [ ] List all pages option
+* [ ] Verbose option
 
 
 ## Contributing

@@ -31,9 +31,21 @@ int listPrograms();
 void printVersion();
 void printHelp();
 
-#define VERSION "0.1.0"
+#define VERSION "0.2.0"
 #define BUFFER_SIZE 1000
-#define PAGES_BASE_DIR "/opt/shortcut/pages/"
+
+#ifndef PAGES_DIR
+    #define PAGES_BASE_DIR "/opt/shortcut/pages/"
+#else
+    #define PAGES_BASE_DIR PAGES_DIR
+#endif
+
+#ifndef DEBUG
+    #define DEBUG_FLAG 0
+#else
+    #define DEBUG_FLAG DEBUG
+#endif
+
 #define PAGES_FILE_EXT ".md"
 
 #define ANSI_COLOR_RESET_FG "\x1b[39m"
@@ -155,7 +167,7 @@ int getShortcutPage(char *filename)
     if(strncmp(PAGES_BASE_DIR, filename, strlen(PAGES_BASE_DIR)-1) != 0) {
         strcat(path, PAGES_BASE_DIR);
     }
-    // might need to add the length of path to filename when checking lenght against BUFFER_SIZE
+    // might need to add the length of path to filename when checking length against BUFFER_SIZE
     strncat(path,
             filename,
             (strlen(filename) < BUFFER_SIZE) ?
@@ -215,7 +227,7 @@ int isValidShortcutPath(const char* path) {
         int dirsAreEqual =  strncmp(PAGES_BASE_DIR, abspath, strlen(PAGES_BASE_DIR));
 
         free(abspath);
-        return (dirsAreEqual == 0);
+        return (dirsAreEqual == 0 || DEBUG_FLAG);
     }
     free(abspath);
     return 0;
@@ -374,7 +386,7 @@ int listPrograms()
         }
 
         if (S_ISREG(buf.st_mode)){ // Is the file not a symlink?
-            printf("%.*s\n", strlen(file->d_name)-3, file->d_name); //Print everything except the last 3 characters
+            fprintf(stdout, "%.*s\n",(int) strlen(file->d_name)-3, file->d_name); //Print everything except the last 3 characters
 
         }
     }
@@ -391,7 +403,8 @@ void printVersion()
 void printHelp()
 {
     fprintf(stdout, "shortcut program [option]\n\n");
-    fprintf(stdout, "Outputs shortcut for a given program\n\n");
+    fprintf(stdout, "Outputs shortcut for a given program\n");
+    fprintf(stdout, "Shortcut-Pages directory is located in: %s\n\n", PAGES_BASE_DIR);
     fprintf(stdout, "Options:\n");
 
     fprintf(stdout, "\t%-20s %-40s\n", "-V, --version", "print program version");
