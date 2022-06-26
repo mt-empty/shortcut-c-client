@@ -386,7 +386,7 @@ int listPrograms()
         }
 
         if (S_ISREG(buf.st_mode)){ // Is the file not a symlink?
-            printf("%.*s\n", strlen(file->d_name)-3, file->d_name); //Print everything except the last 3 characters
+            fprintf(stdout, "%.*s\n",(int) strlen(file->d_name)-3, file->d_name); //Print everything except the last 3 characters
 
         }
     }
