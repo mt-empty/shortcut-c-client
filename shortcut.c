@@ -31,9 +31,14 @@ int listPrograms();
 void printVersion();
 void printHelp();
 
-#define VERSION "0.1.0"
+#define VERSION "0.2.0"
 #define BUFFER_SIZE 1000
-#define PAGES_BASE_DIR "/opt/shortcut/pages/"
+
+#ifndef PAGES_BASE_DIR
+    #define PAGES_BASE_DIR "/opt/shortcut/pages/"
+#else
+    #define PAGES_BASE_DIR PAGES_BASE_DIR
+#endif
 #define PAGES_FILE_EXT ".md"
 
 #define ANSI_COLOR_RESET_FG "\x1b[39m"

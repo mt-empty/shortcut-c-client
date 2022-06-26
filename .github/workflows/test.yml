@@ -23,7 +23,7 @@ jobs:
           fetch-depth: 0
 
       - name: Compile
-        run: make debug
+        run: make DEST_DIR=./debug debug
 
       - name: Test printing shortcut version
         run: ./shortcut --version

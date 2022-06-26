@@ -56,3 +56,5 @@ dkms.conf
 
 #IDE
 .vscode
+debug
+shortcut
