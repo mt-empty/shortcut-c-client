@@ -8,22 +8,22 @@
 
 # User configurable
 PREFIX			?= /usr/local/bin
-DEST_DIR		:= /opt
+DEST_DIR		?= /opt
 
 
 # General
 TARGET			:= shortcut
 TARGET_DIR 		:= shortcut-pages
-PAGES_DIR 		?= $(DEST_DIR)/$(TARGET)/pages/
+PAGES_DIR 		:= $(DEST_DIR)/$(TARGET)/pages/
 REPO			:= https://github.com/mt-empty/shortcut-pages
 
 
 # Compiler flags
 CC 		:= gcc
 CCFLAG 	:= -Wall
-DBGFLAG := -g
+DBGFLAG := -g -DDEBUG=1
 
-ALL_CCFLAGS		:= $(CCFLAG) -DPAGES_BASE_DIR=$(PAGES_DIR)
+ALL_CCFLAGS		:= $(CCFLAG) -DPAGES_DIR='"$(PAGES_DIR)"'
 
 
 HAS_GIT	:= $(shell type git > /dev/null 2>&1 && echo "1" || echo "0")
@@ -32,11 +32,11 @@ ifeq (0,$(HAS_GIT))
 endif
 
 
-shortcut: shortcut.o
+shortcut: shortcut.c
 	@$(CC) $(ALL_CCFLAGS) -o $@ $<
 
 .PHONY: shortcut-debug
-shortcut-debug: shortcut.o
+shortcut-debug: shortcut.c
 	@$(CC) $(ALL_CCFLAGS) $(DBGFLAG) -o $(TARGET) $<
 
 .PHONY: clean
@@ -73,6 +73,7 @@ install: check-root clean shortcut move
 
 	@mkdir -p $(PREFIX)
 	@ln -s $(DEST_DIR)/$(TARGET)/$(TARGET) $(PREFIX)/$(TARGET)
+	@rm -rf $(TARGET_DIR)
 	@echo "All done"
 
 .PHONY: install-extra
