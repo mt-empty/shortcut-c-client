@@ -6,7 +6,6 @@ A command line client for [shortcut-pages](https://github.com/mt-empty/shortcut-
 
 
 ## Installing
-**Note**, I'm fairly new to Linux, this tool is in it's early stages, any contribution is greatly appreciated.
 
 Install from source:
 ```
@@ -43,10 +42,10 @@ available commands:
 
 
 ## TODO
+
+* [x] List all pages option
 * [ ] Auto completion
 * [ ] Update option
-* [ ] List all pages option
-* [ ] Verbose option
 
 
 ## Contributing
